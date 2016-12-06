@@ -2,12 +2,18 @@ package DigitalContentWsWeb;
 
 import javax.enterprise.context.RequestScoped;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
+import com.ibm.wsdl.util.IOUtils;
+
+import java.io.IOException;
+import java.nio.channels.IllegalSelectorException;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.UUID;
 
@@ -23,32 +29,26 @@ public class DigitalContentWebService {
 	@Path("/GET/contents/{id}")
 	@GET
 	@Produces("application/json")
-	public Response getContents(@PathParam("id") String key){
-		String result;
+	public Response getContents(@PathParam("id") String key){		
 		try{
-			InitialContext cxt = new InitialContext();
-			if (cxt != null){
-				DataSource ds = (DataSource) cxt.lookup("java:/PostgresXADS");			
-				if (ds == null) result ="KO.DataSource";
-				else{
-					Connection connection = ds.getConnection();
-					Statement st = connection.createStatement();
-					ResultSet r = st.executeQuery("select c.* from public.contents c where c.content_key = '" + key + "'");
-					DigitalContent dc = new DigitalContent();
-					while(r.next()){		
-						dc.setKey(r.getString("content_key"));
-						dc.setPath(r.getString("path"));
-						dc.setDescription(r.getString("description"));
-						dc.setOwner(r.getString("content_owner"));
-					}
-					connection.close();
-					st.close();
-					return Response.status(200).entity(dc).build();
-				}
+			Connection connection = getDataSourceConnection();
+			Statement st = connection.createStatement();
+			ResultSet r = st.executeQuery("select c.* from public.contents c where c.content_key = '" + key + "'");
+			DigitalContent dc = new DigitalContent();
+			while(r.next()){		
+				dc.setKey(r.getString("content_key"));
+				dc.setPath(r.getString("path"));
+				dc.setDescription(r.getString("description"));
+				dc.setOwner(r.getString("content_owner"));
 			}
-			}
-			catch(Exception e){ e.printStackTrace(); result = "KO.SQL " + e.getMessage(); }
-		return Response.status(500).build();
+			connection.close();
+			st.close();
+			return Response.status(200).entity(dc).build();
+		}catch(SQLException ex){
+			return Response.status(500).entity("SQL error").build();
+		}catch (IllegalStateException ex){
+			return Response.status(500).entity("DataSource error.").build();
+		}
 	}
 	
 	
@@ -57,29 +57,34 @@ public class DigitalContentWebService {
 	@Consumes("application/json")
 	@Produces("application/json")
 	public Response upload(DigitalContent dc){
-		String result;
+		try{
+			Connection connection = getDataSourceConnection();
+			Statement st = connection.createStatement();
+			String key = UUID.randomUUID().toString().replaceAll("-", "");;
+			st.executeUpdate("INSERT INTO public.contents (content_key,path,description,content_owner) "
+					+ "VALUES('" + key + "', " 
+					+ " '" + dc.getPath() + "', " 
+					+ " '" + dc.getDescription() + "', " 
+					+ " '" + dc.getOwner() + "')");
+			connection.close();
+			st.close();
+			return Response.status(201).entity(key).build();
+			
+		}catch(SQLException ex){
+			return Response.status(500).entity("SQL error").build();
+		}catch (IllegalStateException ex){
+			return Response.status(500).entity("DataSource error.").build();
+		}
+		
+	}
+	
+	private Connection getDataSourceConnection() throws IllegalStateException{
 		try{
 			InitialContext cxt = new InitialContext();
-			if (cxt != null){
-				DataSource ds = (DataSource) cxt.lookup("java:/PostgresXADS");			
-				if (ds == null) result ="KO.DataSource";
-				else{
-					Connection connection = ds.getConnection();
-					Statement st = connection.createStatement();
-					String key = UUID.randomUUID().toString().replaceAll("-", "");;
-					int res = st.executeUpdate("INSERT INTO public.contents (content_key,path,description,content_owner) "
-							+ "VALUES('" + key + "', " 
-							+ " '" + dc.getPath() + "', " 
-							+ " '" + dc.getDescription() + "', " 
-							+ " '" + dc.getOwner() + "')");
-					connection.close();
-					st.close();
-					return Response.status(201).entity(key).build();
-				}
-			}
-			}
-			catch(Exception e){ e.printStackTrace(); result = "KO.SQL " + e.getMessage(); }
-		return Response.status(500).entity(dc).build();
+			DataSource ds = (DataSource) cxt.lookup("java:/PostgresXADS");			
+			return ds.getConnection();
+		}catch(NamingException | SQLException ex){
+			throw new IllegalStateException();
+		}
 	}
-
 }
