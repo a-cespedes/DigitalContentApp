@@ -35,15 +35,20 @@ public class DigitalContentWebService {
 			Statement st = connection.createStatement();
 			ResultSet r = st.executeQuery("select c.* from public.contents c where c.content_key = '" + key + "'");
 			DigitalContent dc = new DigitalContent();
-			while(r.next()){		
-				dc.setKey(r.getString("content_key"));
-				dc.setPath(r.getString("path"));
-				dc.setDescription(r.getString("description"));
-				dc.setOwner(r.getString("content_owner"));
+			if(!r.isBeforeFirst()){
+				return Response.status(404).entity("Not Found").build();
 			}
-			connection.close();
-			st.close();
-			return Response.status(200).entity(dc).build();
+			else{
+				while(r.next()){		
+					dc.setKey(r.getString("content_key"));
+					dc.setPath(r.getString("path"));
+					dc.setDescription(r.getString("description"));
+					dc.setOwner(r.getString("content_owner"));
+				}
+				connection.close();
+				st.close();
+				return Response.status(200).entity(dc).build();
+			}
 		}catch(SQLException ex){
 			return Response.status(500).entity("SQL error").build();
 		}catch (IllegalStateException ex){
@@ -76,6 +81,24 @@ public class DigitalContentWebService {
 			return Response.status(500).entity("DataSource error.").build();
 		}
 		
+	}
+	
+	@Path("/DELETE/contents/{id}")
+	@DELETE
+	@Produces("application/json")
+	public Response delete(@PathParam("id") String key){
+		try{
+			Connection connection = getDataSourceConnection();
+			Statement st = connection.createStatement();
+			st.executeUpdate("delete from public.contents c where c.content_key = '" + key + "'");
+			connection.close();
+			st.close();
+			return Response.status(204).build();
+		}catch(SQLException ex){
+			return Response.status(500).entity("SQL error").build();
+		}catch (IllegalStateException ex){
+			return Response.status(500).entity("DataSource error.").build();
+		}
 	}
 	
 	private Connection getDataSourceConnection() throws IllegalStateException{

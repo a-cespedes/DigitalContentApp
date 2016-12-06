@@ -72,5 +72,29 @@ public class DigitalContentTest {
 	catch (IOException e) { 
 			e.printStackTrace();
 	}
+	
+	//Test for method DELETE
+	
+	try{
+		URL url = new URL ("http://localhost:8080/DigitalContentWsWeb/DigitalContentWs/DELETE/contents/" + key);
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		conn.setDoOutput(true);
+		conn.setRequestMethod("DELETE");
+
+		if(conn.getResponseCode() != HttpURLConnection.HTTP_NO_CONTENT) {
+
+			throw new RuntimeException("Failed: HTTP errorcode: " + conn.getResponseCode()); }
+
+		else{
+
+			System.out.println("\nDELETE. Response : OK.");
+
+		}
+		
+	}
+		
+	catch (IOException e) { 
+		e.printStackTrace();
+	}
 	}
 }
