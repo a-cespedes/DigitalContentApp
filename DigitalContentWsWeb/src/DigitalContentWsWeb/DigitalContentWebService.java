@@ -15,6 +15,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import DigitalContentInfo.DigitalContent;
@@ -94,6 +96,38 @@ public class DigitalContentWebService {
 			connection.close();
 			st.close();
 			return Response.status(204).build();
+		}catch(SQLException ex){
+			return Response.status(500).entity("SQL error").build();
+		}catch (IllegalStateException ex){
+			return Response.status(500).entity("DataSource error.").build();
+		}
+	}
+	
+	@Path("/GET/contents/owner/{name}")
+	@GET
+	@Produces("application/json")
+	public Response getContentsByOwner(@PathParam("name") String owner){		
+		try{
+			Connection connection = getDataSourceConnection();
+			Statement st = connection.createStatement();
+			ResultSet r = st.executeQuery("select c.* from public.contents c where c.content_owner = '" + owner + "'");
+			if(!r.isBeforeFirst()){
+				return Response.status(404).entity("Not Found").build();
+			}
+			else{
+				Set<DigitalContent> results = new HashSet<>();
+				while(r.next()){		
+					DigitalContent dc = new DigitalContent();
+					dc.setKey(r.getString("content_key"));
+					dc.setPath(r.getString("path"));
+					dc.setDescription(r.getString("description"));
+					dc.setOwner(r.getString("content_owner"));
+					results.add(dc);
+				}
+				connection.close();
+				st.close();
+				return Response.status(200).entity(results).build();
+			}
 		}catch(SQLException ex){
 			return Response.status(500).entity("SQL error").build();
 		}catch (IllegalStateException ex){
