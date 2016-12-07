@@ -122,5 +122,33 @@ public class DigitalContentTest {
 		catch (IOException e) { 
 				e.printStackTrace();
 		}
+
+	
+	//Test for method GET by description
+	
+	try{
+		URL url = new URL ("http://localhost:8080/DigitalContentWsWeb/DigitalContentWs/GET/contents/search/furious");
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		conn.setRequestMethod("GET");
+		conn.setRequestProperty("Accept", MediaType.APPLICATION_JSON);
+		if(conn.getResponseCode() != 200) {
+
+			throw new RuntimeException("Failed: HTTP error code: " + conn.getResponseCode()); }
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			String output;
+
+			while((output = br.readLine()) != null){
+
+				System.out.println("\nGET. Response: " + output );
+			}
+			conn.disconnect();
+
 	}
+			
+	catch (IOException e) { 
+		e.printStackTrace();
+	}
+	}
+	
 }
