@@ -11,13 +11,13 @@ public class DigitalContentTest {
 		
 	String key = "";
 	
-	//Test for method PUT
+	//Test for method POST
 		
 	try{
-		URL url = new URL ("http://localhost:8080/DigitalContentWsWeb/DigitalContentWs/PUT/contents");
+		URL url = new URL ("http://localhost:8080/DigitalContentWsWeb/DigitalContentWs/contents");
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setDoOutput(true);
-		conn.setRequestMethod("PUT");
+		conn.setRequestMethod("POST");
 		conn.setRequestProperty("Content-Type", "application/json");
 		
 		String input = "{\"description\":\"fast furious 1\",\"path\":\"/contents/f&f1.mp4\",\"owner\":\"pepito\"}";
@@ -37,7 +37,7 @@ public class DigitalContentTest {
 			
 			key = output;
 
-			System.out.println("\nPUT. Response: " + output );
+			System.out.println("\nPOST. Response: " + output );
 
 		}
 		
@@ -50,7 +50,7 @@ public class DigitalContentTest {
 	//Test for method GET
 	
 	try{
-		URL url = new URL ("http://localhost:8080/DigitalContentWsWeb/DigitalContentWs/GET/contents/" + key);
+		URL url = new URL ("http://localhost:8080/DigitalContentWsWeb/DigitalContentWs/contents/" + key);
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setRequestMethod("GET");
 		conn.setRequestProperty("Accept", MediaType.APPLICATION_JSON);
@@ -73,10 +73,41 @@ public class DigitalContentTest {
 			e.printStackTrace();
 	}
 	
+	//Test for method PUT changing description
+	
+	try{
+		URL url = new URL ("http://localhost:8080/DigitalContentWsWeb/DigitalContentWs/contents/" + key);
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		conn.setDoOutput(true);
+		conn.setRequestMethod("PUT");
+		conn.setRequestProperty("Content-Type", "application/json");
+		
+		String input =  "fast furious 3";
+
+		OutputStream os = conn.getOutputStream();
+		os.write(input.getBytes());
+		os.flush();
+		
+		if(conn.getResponseCode() != 200) {
+
+			throw new RuntimeException("Failed: HTTP error code: " + conn.getResponseCode()); }
+
+		else{
+
+			System.out.println("\nPUT. Response : OK.");
+
+		}
+
+	}
+					
+	catch (IOException e) { 
+		e.printStackTrace();
+	}
+	
 	//Test for method DELETE
 	
 	try{
-		URL url = new URL ("http://localhost:8080/DigitalContentWsWeb/DigitalContentWs/DELETE/contents/" + key);
+		URL url = new URL ("http://localhost:8080/DigitalContentWsWeb/DigitalContentWs/contents/" + key);
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setDoOutput(true);
 		conn.setRequestMethod("DELETE");
@@ -100,7 +131,7 @@ public class DigitalContentTest {
 	//Test for method GET by owner
 	
 	try{
-		URL url = new URL ("http://localhost:8080/DigitalContentWsWeb/DigitalContentWs/GET/contents/owner/pepito" );
+		URL url = new URL ("http://localhost:8080/DigitalContentWsWeb/DigitalContentWs/contents/owner/pepito" );
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setRequestMethod("GET");
 		conn.setRequestProperty("Accept", MediaType.APPLICATION_JSON);
@@ -127,7 +158,7 @@ public class DigitalContentTest {
 	//Test for method GET by description
 	
 	try{
-		URL url = new URL ("http://localhost:8080/DigitalContentWsWeb/DigitalContentWs/GET/contents/search/furious");
+		URL url = new URL ("http://localhost:8080/DigitalContentWsWeb/DigitalContentWs/contents/search/furious");
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setRequestMethod("GET");
 		conn.setRequestProperty("Accept", MediaType.APPLICATION_JSON);
@@ -149,6 +180,7 @@ public class DigitalContentTest {
 	catch (IOException e) { 
 		e.printStackTrace();
 	}
+	
 	}
 	
 }

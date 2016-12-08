@@ -9,6 +9,7 @@ import javax.ws.rs.core.Response;
 
 import com.ibm.wsdl.util.IOUtils;
 
+import java.awt.PageAttributes.MediaType;
 import java.io.IOException;
 import java.nio.channels.IllegalSelectorException;
 import java.sql.Connection;
@@ -20,6 +21,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import DigitalContentInfo.DigitalContent;
+import sun.net.www.content.text.plain;
 
 
 @RequestScoped
@@ -28,7 +30,7 @@ import DigitalContentInfo.DigitalContent;
 @Consumes({ "application/xml", "application/json" })
 public class DigitalContentWebService {
 	
-	@Path("/GET/contents/{id}")
+	@Path("/contents/{id}")
 	@GET
 	@Produces("application/json")
 	public Response getContents(@PathParam("id") String key){		
@@ -59,8 +61,8 @@ public class DigitalContentWebService {
 	}
 	
 	
-	@PUT
-	@Path("/PUT/contents")
+	@POST
+	@Path("/contents")
 	@Consumes("application/json")
 	@Produces("application/json")
 	public Response upload(DigitalContent dc){
@@ -85,7 +87,7 @@ public class DigitalContentWebService {
 		
 	}
 	
-	@Path("/DELETE/contents/{id}")
+	@Path("/contents/{id}")
 	@DELETE
 	@Produces("application/json")
 	public Response delete(@PathParam("id") String key){
@@ -103,7 +105,7 @@ public class DigitalContentWebService {
 		}
 	}
 	
-	@Path("/GET/contents/owner/{name}")
+	@Path("/contents/owner/{name}")
 	@GET
 	@Produces("application/json")
 	public Response getContentsByOwner(@PathParam("name") String owner){		
@@ -135,7 +137,7 @@ public class DigitalContentWebService {
 		}
 	}
 	
-	@Path("/GET/contents/search/{word}")
+	@Path("/contents/search/{word}")
 	@GET
 	@Produces("application/json")
 	public Response getContentsBySearch(@PathParam("word") String description){		
@@ -160,6 +162,24 @@ public class DigitalContentWebService {
 				st.close();
 				return Response.status(200).entity(results).build();
 			}
+		}catch(SQLException ex){
+			return Response.status(500).entity("SQL error").build();
+		}catch (IllegalStateException ex){
+			return Response.status(500).entity("DataSource error.").build();
+		}
+	}
+	
+	@Path("/contents/{id}")
+	@PUT
+	@Consumes("application/json")
+	public Response modifyContent(@PathParam("id") String key, String description){		
+		try{
+			Connection connection = getDataSourceConnection();
+			Statement st = connection.createStatement();
+			st.executeUpdate("update public.contents set description = '" + description + "' where content_key = '" + key +  "'");
+			connection.close();
+			st.close();
+			return Response.status(200).build();		
 		}catch(SQLException ex){
 			return Response.status(500).entity("SQL error").build();
 		}catch (IllegalStateException ex){
