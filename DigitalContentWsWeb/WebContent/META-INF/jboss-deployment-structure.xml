@@ -1,0 +1,16 @@
+<jboss-deployment-structure>
+
+   <deployment>
+
+      <dependencies>
+         <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>1.0-SNAPSHOT</version> 
+            <type>jar</type>
+        </dependency>
+      </dependencies>
+
+   </deployment>
+
+</jboss-deployment-structure>

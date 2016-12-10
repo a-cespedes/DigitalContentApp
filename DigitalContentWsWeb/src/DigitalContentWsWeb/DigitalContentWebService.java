@@ -69,15 +69,14 @@ public class DigitalContentWebService {
 		try{
 			Connection connection = getDataSourceConnection();
 			Statement st = connection.createStatement();
-			String key = UUID.randomUUID().toString().replaceAll("-", "");;
 			st.executeUpdate("INSERT INTO public.contents (content_key,path,description,content_owner) "
-					+ "VALUES('" + key + "', " 
+					+ "VALUES('" + dc.getKey() + "', " 
 					+ " '" + dc.getPath() + "', " 
 					+ " '" + dc.getDescription() + "', " 
 					+ " '" + dc.getOwner() + "')");
 			connection.close();
 			st.close();
-			return Response.status(201).entity(key).build();
+			return Response.status(201).entity(dc.getKey()).build();
 			
 		}catch(SQLException ex){
 			return Response.status(500).entity("SQL error").build();

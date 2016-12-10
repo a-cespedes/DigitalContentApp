@@ -2,14 +2,19 @@ package DigitalContentClient;
 
 import java.io.*;
 import java.net.*;
+import java.util.UUID;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonWriter;
 import javax.ws.rs.core.MediaType;
 
 public class DigitalContentTest {
 	
 	public static void main(String[] args) {
 		
-	String key = "";
+	String key = UUID.randomUUID().toString().replaceAll("-", "");;
 	
 	//Test for method POST
 		
@@ -20,11 +25,18 @@ public class DigitalContentTest {
 		conn.setRequestMethod("POST");
 		conn.setRequestProperty("Content-Type", "application/json");
 		
-		String input = "{\"description\":\"fast furious 1\",\"path\":\"/contents/f&f1.mp4\",\"owner\":\"pepito\"}";
-
+		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+		jsonBuilder.add("key", key);
+		jsonBuilder.add("path","/contents/f&f1.mp4");
+		jsonBuilder.add("owner","pepito");
+		jsonBuilder.add("description","fast furious 1");
+		JsonObject o = jsonBuilder.build();
+		
 		OutputStream os = conn.getOutputStream();
-		os.write(input.getBytes());
-		os.flush();
+		JsonWriter jsonWriter = Json.createWriter(os);
+		
+		jsonWriter.writeObject(o);
+		jsonWriter.close();
 
 		if(conn.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
 
