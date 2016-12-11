@@ -111,6 +111,51 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
 		return null;
     }
     
+    @Override
+    public void list(String owner, String clientId) throws RemoteException {
+    	User user = users.get(clientId);
+    	try{
+    		Set<ContentInfo> contents = webService.list(owner);	
+    		user.client.receiveMessage(printListOfContents(contents));
+    	}  	
+    	catch (IOException e) { 
+    		user.client.receiveMessage("There has been a problem getting the file.");
+    		e.printStackTrace();
+    	}
+    	
+    }
+    
+    private String printListOfContents(Set<ContentInfo> results){
+    	String resultsNumber = results.size() + " results found.\n";
+		String header = "";
+		for (int i = 0; i < 15; i++)
+			header += " ";
+		header += "key";
+		for (int i = 0; i < 16; i++)
+			header += " ";
+		header += "|";
+		String line = "";
+		for (int i = 0; i < 34; i++)
+			line += "-";
+		line += "+";		
+		String rs = "";
+		int maxSize = 12;
+		for (ContentInfo c : results){
+			rs += " " + c.getKey() + " " + "|" + " " + c.getDescription() +"\n";
+			if(c.getDescription().length() + 1 > maxSize){
+				maxSize = c.getDescription().length() + 1;
+			}
+		}
+		String d = "description";
+		int spacesNum = (maxSize - d.length()) / 2;
+		for (int i = 0; i < spacesNum; i++)
+			header += " ";
+		header+= d + "\n";
+		for (int i = 0; i < 2 * spacesNum + d.length(); i++)
+			line += "-";
+		line += "\n";
+		return resultsNumber + header + line + rs;
+    }
     
 
     @Override

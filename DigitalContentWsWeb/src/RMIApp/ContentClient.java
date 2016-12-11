@@ -62,7 +62,7 @@ public class ContentClient{
                             h.modifyContent(key, description, clientId);
                             break;
                         case "g":
-                            System.out.println("Enter key :");
+                            System.out.println("Enter key:");
                             key = scn.nextLine();
                             d = h.getContent(key,clientId);
                             if(d != null){
@@ -70,9 +70,13 @@ public class ContentClient{
                             }
                             break;
                         case "d":
-                            System.out.println("Enter key :");
+                            System.out.println("Enter key:");
                             h.delete(scn.nextLine(),clientId);
                             break;
+                        case "l":
+                        	System.out.println("Enter user (your nick will provide the contents that you uploaded):");
+                        	h.list(scn.nextLine(), clientId);
+                        	break;
                         case "q":
                         	scn.close();
                             System.exit(0);
@@ -91,6 +95,7 @@ public class ContentClient{
             System.out.println("m:Modify content");
             System.out.println("d:Delete content");
             System.out.println("g:Get content");
+            System.out.println("l:list contents");
             System.out.println("q:Quit application");
         }
         

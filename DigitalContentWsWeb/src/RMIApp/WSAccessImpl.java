@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.json.*;
 import javax.ws.rs.core.MediaType;
@@ -130,6 +132,45 @@ public class WSAccessImpl implements WSAccess{
 			e.printStackTrace();
 		}
 		
+	}
+	
+	@Override
+	public Set<ContentInfo> list(String owner) throws IOException {
+		try{
+			URL url = new URL (wsUrl + "owner/" + owner );
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("GET");
+			conn.setRequestProperty("Accept", MediaType.APPLICATION_JSON);
+			if(conn.getResponseCode() != 200) {
+
+				throw new RuntimeException("Failed: HTTP error code: " + conn.getResponseCode()); 
+				
+			}
+			
+			JsonReader jr = Json.createReader(conn.getInputStream());
+			JsonArray a = jr.readArray();
+			Set<ContentInfo> results = new HashSet<>();		
+			for(int i = 0; i < a.size();i++){
+				JsonObject o = a.getJsonObject(i);	
+				ContentInfo ci = new ContentInfo();
+	    		ci.setKey(o.getString("key"));
+	    		ci.setDescription(o.getString("description"));
+	    		ci.setOwner(o.getString("owner"));
+	    		ci.setPath(o.getString("path"));
+	    		results.add(ci);
+			}
+			jr.close();
+    		conn.disconnect();
+				
+    		return results;
+
+		}
+			
+		catch (IOException e) { 
+			e.printStackTrace();
+		}
+		
+		return null;
 	}
 
 }
