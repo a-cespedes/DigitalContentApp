@@ -83,6 +83,7 @@ public class ContentClient{
                         	break;
                         case "q":
                         	scn.close();
+                        	h.logout(c, clientId);
                             System.exit(0);
                     }
                 }

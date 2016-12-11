@@ -5,6 +5,7 @@ import java.io.*;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.util.*;
+import java.util.Map.Entry;
 
 
 
@@ -191,19 +192,36 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
 
     @Override
     public String registerClient(RMIClientInterface client, String name) throws RemoteException {
-        User user = new User (name,client);
-        String id = "";
+        User user = new User(name,client);
+        String id = UUID.randomUUID().toString();
         if(nicks.contains(user.name)){
-            user.client.receiveMessage("User already in use. Try another nick.");
+        	for(Entry<String,User> row : users.entrySet()){
+        		if(row.getValue().name.equals(user.name)){
+        			id = row.getKey();       			
+        			user.connect();
+        			users.put(id, user);
+        			user.client.receiveMessage("Weclome back: " + user.name);   
+        			System.out.println("Client " + id + " has log in in the system.");
+        		}
+        		
+        	}
         }
         else{
-            id = UUID.randomUUID().toString();
+        	id = UUID.randomUUID().toString();
             users.put(id, user);
             nicks.add(user.name);
             user.client.receiveMessage("Correct registration.");
             System.out.println("Client " + id + " has registered the system.");
         }
         return id;
+    }
+    
+    @Override
+    public void logout(RMIClientInterface client,String clientId) throws RemoteException {
+    	User user = users.get(clientId);
+    	user.disconnect();
+    	users.put(clientId, user);
+    	
     }
     
     private void saveContent(byte [] digitalContent, String contentId){
@@ -221,10 +239,17 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     public class User{
         public String name;
         public RMIClientInterface client;
+        public boolean connected;
 
         public User(String name, RMIClientInterface client) {
             this.name = name;
             this.client = client;
+        }
+        public void connect(){
+        	this.connected = true;
+        }
+        public void disconnect(){
+        	this.connected = false;
         }
             
     }
