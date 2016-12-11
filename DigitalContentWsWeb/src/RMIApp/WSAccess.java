@@ -9,4 +9,5 @@ public interface WSAccess {
 	public void delete(String key) throws IOException;
 	public void modifyContent(String key,String description) throws IOException;
 	public Set<ContentInfo> list(String owner) throws IOException;
+	public Set<ContentInfo> search(String word) throws IOException;
 }

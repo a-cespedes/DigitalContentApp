@@ -55,6 +55,7 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     	User user = users.get(clientId);
     	try{
     		ContentInfo ci = webService.getContent(contentId);	
+    		user.client.receiveMessage("The content :" + contentId +  "has description:" + ci.getDescription());
     		return new DigitalContent(ci.getDescription(),getFileContent(ci.getPath()));
     	}  	
     	catch (IOException e) { 
@@ -119,14 +120,28 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     		user.client.receiveMessage(printListOfContents(contents));
     	}  	
     	catch (IOException e) { 
-    		user.client.receiveMessage("There has been a problem getting the file.");
+    		user.client.receiveMessage("There has been a problem getting the list of contents.");
+    		e.printStackTrace();
+    	}
+    	
+    }
+    
+    @Override
+    public void search(String word, String clientId) throws RemoteException {
+    	User user = users.get(clientId);
+    	try{
+    		Set<ContentInfo> contents = webService.search(word);	
+    		user.client.receiveMessage(printListOfContents(contents));
+    	}  	
+    	catch (IOException e) { 
+    		user.client.receiveMessage("There has been a problem getting content from the search.");
     		e.printStackTrace();
     	}
     	
     }
     
     private String printListOfContents(Set<ContentInfo> results){
-    	String resultsNumber = results.size() + " results found.\n";
+    	String resultsNumber = results.size() + " results found.\n\n";
 		String header = "";
 		for (int i = 0; i < 15; i++)
 			header += " ";

@@ -77,6 +77,10 @@ public class ContentClient{
                         	System.out.println("Enter user (your nick will provide the contents that you uploaded):");
                         	h.list(scn.nextLine(), clientId);
                         	break;
+                        case "s":
+                        	System.out.println("Enter words to search:");
+                        	h.search(scn.nextLine(), clientId);
+                        	break;
                         case "q":
                         	scn.close();
                             System.exit(0);
@@ -95,7 +99,8 @@ public class ContentClient{
             System.out.println("m:Modify content");
             System.out.println("d:Delete content");
             System.out.println("g:Get content");
-            System.out.println("l:list contents");
+            System.out.println("l:List contents");
+            System.out.println("s:Search contents by description");
             System.out.println("q:Quit application");
         }
         
