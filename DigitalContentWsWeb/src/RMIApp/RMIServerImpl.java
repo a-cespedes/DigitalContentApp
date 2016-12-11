@@ -36,6 +36,10 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
         User user = users.get(clientId);
         try{
     		ContentInfo ci = webService.getContent(contentId);	
+    		if(ci == null){
+    			user.client.receiveMessage("There is no content with key: " + contentId);
+    			return;
+    		}
     		if(!ci.getOwner().equals(user.name)){
     			user.client.receiveMessage("You don't have permission to modify this content.");
     			return;
@@ -77,6 +81,10 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
         User user = users.get(clientId);
         try{
     		ContentInfo ci = webService.getContent(contentId);	
+    		if(ci == null){
+    			user.client.receiveMessage("There is no content with key: " + contentId);
+    			return;
+    		}
     		if(!ci.getOwner().equals(user.name)){
     			user.client.receiveMessage("You don't have permission to delete this content.");
     			return;
