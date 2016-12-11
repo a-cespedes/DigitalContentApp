@@ -11,6 +11,7 @@ import java.util.Set;
 
 import javax.json.*;
 import javax.ws.rs.core.MediaType;
+import javax.wsdl.extensions.http.HTTPUrlEncoded;
 
 public class WSAccessImpl implements WSAccess{
 	
@@ -23,22 +24,29 @@ public class WSAccessImpl implements WSAccess{
     		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
     		conn.setRequestMethod("GET");
     		conn.setRequestProperty("Accept", MediaType.APPLICATION_JSON);
-    		if(conn.getResponseCode() != 200) {
-
-    			throw new RuntimeException("Failed: HTTP error code: " + conn.getResponseCode()); 
-    			
+    		if(conn.getResponseCode() == HttpURLConnection.HTTP_OK) {    		
+	    		JsonReader jr = Json.createReader(conn.getInputStream());
+	    		JsonObject o = jr.readObject();
+	    		jr.close();
+	    		conn.disconnect();
+	    		ContentInfo ci = new ContentInfo();
+	    		ci.setKey(o.getString("key"));
+	    		ci.setDescription(o.getString("description"));
+	    		ci.setOwner(o.getString("owner"));
+	    		ci.setPath(o.getString("path"));
+	    		return ci;
     		}
-    		
-    		JsonReader jr = Json.createReader(conn.getInputStream());
-    		JsonObject o = jr.readObject();
-    		jr.close();
-    		conn.disconnect();
-    		ContentInfo ci = new ContentInfo();
-    		ci.setKey(o.getString("key"));
-    		ci.setDescription(o.getString("description"));
-    		ci.setOwner(o.getString("owner"));
-    		ci.setPath(o.getString("path"));
-    		return ci;
+    		else if(conn.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND){
+				
+				return null;	
+				
+			}
+			else{
+
+				throw new RuntimeException("Failed: HTTP error code: " + conn.getResponseCode()); 
+				
+			}
+
     	}
     	
     	catch (IOException e) { 
@@ -141,28 +149,37 @@ public class WSAccessImpl implements WSAccess{
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("GET");
 			conn.setRequestProperty("Accept", MediaType.APPLICATION_JSON);
-			if(conn.getResponseCode() != 200) {
+			
+			if(conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+
+				JsonReader jr = Json.createReader(conn.getInputStream());
+				JsonArray a = jr.readArray();
+				Set<ContentInfo> results = new HashSet<>();		
+				for(int i = 0; i < a.size();i++){
+					JsonObject o = a.getJsonObject(i);	
+					ContentInfo ci = new ContentInfo();
+		    		ci.setKey(o.getString("key"));
+		    		ci.setDescription(o.getString("description"));
+		    		ci.setOwner(o.getString("owner"));
+		    		ci.setPath(o.getString("path"));
+		    		results.add(ci);
+				}
+				jr.close();
+	    		conn.disconnect();
+					
+	    		return results;
+			}
+    		
+    		else if(conn.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND){
+				
+				return new HashSet<>();	
+				
+			}
+			else{
 
 				throw new RuntimeException("Failed: HTTP error code: " + conn.getResponseCode()); 
 				
 			}
-			
-			JsonReader jr = Json.createReader(conn.getInputStream());
-			JsonArray a = jr.readArray();
-			Set<ContentInfo> results = new HashSet<>();		
-			for(int i = 0; i < a.size();i++){
-				JsonObject o = a.getJsonObject(i);	
-				ContentInfo ci = new ContentInfo();
-	    		ci.setKey(o.getString("key"));
-	    		ci.setDescription(o.getString("description"));
-	    		ci.setOwner(o.getString("owner"));
-	    		ci.setPath(o.getString("path"));
-	    		results.add(ci);
-			}
-			jr.close();
-    		conn.disconnect();
-				
-    		return results;
 
 		}
 			
@@ -180,29 +197,34 @@ public class WSAccessImpl implements WSAccess{
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("GET");
 			conn.setRequestProperty("Accept", MediaType.APPLICATION_JSON);
-			if(conn.getResponseCode() != 200) {
+			if (conn.getResponseCode() == HttpURLConnection.HTTP_OK){
+				JsonReader jr = Json.createReader(conn.getInputStream());
+				JsonArray a = jr.readArray();
+				Set<ContentInfo> results = new HashSet<>();		
+				for(int i = 0; i < a.size();i++){
+					JsonObject o = a.getJsonObject(i);	
+					ContentInfo ci = new ContentInfo();
+		    		ci.setKey(o.getString("key"));
+		    		ci.setDescription(o.getString("description"));
+		    		ci.setOwner(o.getString("owner"));
+		    		ci.setPath(o.getString("path"));
+		    		results.add(ci);
+				}
+				jr.close();
+	    		conn.disconnect();
+					
+	    		return results;
+			}
+			else if(conn.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND){
+				
+				return new HashSet<>();	
+				
+			}
+			else{
 
 				throw new RuntimeException("Failed: HTTP error code: " + conn.getResponseCode()); 
 				
 			}
-			
-			JsonReader jr = Json.createReader(conn.getInputStream());
-			JsonArray a = jr.readArray();
-			Set<ContentInfo> results = new HashSet<>();		
-			for(int i = 0; i < a.size();i++){
-				JsonObject o = a.getJsonObject(i);	
-				ContentInfo ci = new ContentInfo();
-	    		ci.setKey(o.getString("key"));
-	    		ci.setDescription(o.getString("description"));
-	    		ci.setOwner(o.getString("owner"));
-	    		ci.setPath(o.getString("path"));
-	    		results.add(ci);
-			}
-			jr.close();
-    		conn.disconnect();
-				
-    		return results;
-
 		}
 			
 		catch (IOException e) { 

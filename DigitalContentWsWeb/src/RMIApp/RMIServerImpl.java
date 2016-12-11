@@ -54,9 +54,14 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     public DigitalContent getContent(String contentId,String clientId) throws RemoteException{
     	User user = users.get(clientId);
     	try{
-    		ContentInfo ci = webService.getContent(contentId);	
-    		user.client.receiveMessage("The content :" + contentId +  "has description:" + ci.getDescription());
-    		return new DigitalContent(ci.getDescription(),getFileContent(ci.getPath()));
+    		ContentInfo ci = webService.getContent(contentId);	   		
+    		if(ci == null){
+    			user.client.receiveMessage("There is no content with key: " + contentId);
+    		}
+    		else{
+    			user.client.receiveMessage("The content :" + contentId +  "has description:" + ci.getDescription());
+    			return new DigitalContent(ci.getDescription(),getFileContent(ci.getPath()));
+    		}
     	}  	
     	catch (IOException e) { 
     		user.client.receiveMessage("There has been a problem getting the file.");
@@ -142,6 +147,9 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     
     private String printListOfContents(Set<ContentInfo> results){
     	String resultsNumber = results.size() + " results found.\n\n";
+    	if (results.size() == 0){
+    		return resultsNumber;
+    	}
 		String header = "";
 		for (int i = 0; i < 15; i++)
 			header += " ";
