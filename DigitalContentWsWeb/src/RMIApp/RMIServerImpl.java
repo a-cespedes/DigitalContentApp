@@ -131,7 +131,7 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     	User user = users.get(clientId);
     	try{
     		Set<ContentInfo> contents = webService.list(owner);	
-    		user.client.receiveMessage(printListOfContents(contents));
+    		user.client.receiveMessage(printListOfContents(contents,false));
     	}  	
     	catch (IOException e) { 
     		user.client.receiveMessage("There has been a problem getting the list of contents.");
@@ -145,7 +145,7 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     	User user = users.get(clientId);
     	try{
     		Set<ContentInfo> contents = webService.search(word);	
-    		user.client.receiveMessage(printListOfContents(contents));
+    		user.client.receiveMessage(printListOfContents(contents,true));
     	}  	
     	catch (IOException e) { 
     		user.client.receiveMessage("There has been a problem getting content from the search.");
@@ -154,39 +154,20 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     	
     }
     
-    private String printListOfContents(Set<ContentInfo> results){
+    private String printListOfContents(Set<ContentInfo> results,boolean owner){
     	String resultsNumber = results.size() + " results found.\n\n";
     	if (results.size() == 0){
     		return resultsNumber;
     	}
-		String header = "";
-		for (int i = 0; i < 15; i++)
-			header += " ";
-		header += "key";
-		for (int i = 0; i < 16; i++)
-			header += " ";
-		header += "|";
-		String line = "";
-		for (int i = 0; i < 34; i++)
-			line += "-";
-		line += "+";		
-		String rs = "";
-		int maxSize = 12;
+    	String rs ="";
 		for (ContentInfo c : results){
-			rs += " " + c.getKey() + " " + "|" + " " + c.getDescription() +"\n";
-			if(c.getDescription().length() + 1 > maxSize){
-				maxSize = c.getDescription().length() + 1;
+			rs += "key: " + c.getKey() + "\n" + "description: " + c.getDescription() + "\n";
+			if (owner){
+				rs += "owner:" + c.getOwner() + "\n";
 			}
+			rs += "\n";
 		}
-		String d = "description";
-		int spacesNum = (maxSize - d.length()) / 2;
-		for (int i = 0; i < spacesNum; i++)
-			header += " ";
-		header+= d + "\n";
-		for (int i = 0; i < 2 * spacesNum + d.length(); i++)
-			line += "-";
-		line += "\n";
-		return resultsNumber + header + line + rs;
+		return resultsNumber + rs;
     }
     
 
